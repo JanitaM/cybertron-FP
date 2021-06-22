@@ -1521,70 +1521,193 @@
     });
     var tapBrowserColor_1 = tapBrowserColor.colors;
 
-    const stars = [
-      { first: "elvis", last: "presley", alive: false },
-      { first: "jim", last: "morrison", alive: false },
-      { first: "bob", last: "dylan", alive: true },
-      { first: "buddy", last: "holly", alive: false }
-    ];
-    const fullname = o => `${prop("first", o)} ${prop("last", o)}`;
+    function getCards() {
+      return {
+        cards: [
+          {
+            suit: 'HEARTS',
+            image: 'http://deckofcardsapi.com/static/img/6H.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/6H.svg',
+              png: 'http://deckofcardsapi.com/static/img/6H.png'
+            },
+            code: '6H',
+            value: '6'
+          },
+          {
+            suit: 'HEARTS',
+            image: 'http://deckofcardsapi.com/static/img/7H.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/7H.svg',
+              png: 'http://deckofcardsapi.com/static/img/7H.png'
+            },
+            code: '7H',
+            value: '7'
+          },
+          {
+            suit: 'SPADES',
+            image: 'http://deckofcardsapi.com/static/img/KS.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/KS.svg',
+              png: 'http://deckofcardsapi.com/static/img/KS.png'
+            },
+            code: 'KS',
+            value: 'KING'
+          },
+          {
+            suit: 'DIAMONDS',
+            image: 'http://deckofcardsapi.com/static/img/2D.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/2D.svg',
+              png: 'http://deckofcardsapi.com/static/img/2D.png'
+            },
+            code: '2D',
+            value: '2'
+          },
+          {
+            suit: 'SPADES',
+            image: 'http://deckofcardsapi.com/static/img/QS.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/QS.svg',
+              png: 'http://deckofcardsapi.com/static/img/QS.png'
+            },
+            code: 'QS',
+            value: 'QUEEN'
+          },
+          {
+            suit: 'CLUBS',
+            image: 'http://deckofcardsapi.com/static/img/0C.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/0C.svg',
+              png: 'http://deckofcardsapi.com/static/img/0C.png'
+            },
+            code: '0C',
+            value: '10'
+          },
+          {
+            suit: 'HEARTS',
+            image: 'http://deckofcardsapi.com/static/img/8H.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/8H.svg',
+              png: 'http://deckofcardsapi.com/static/img/8H.png'
+            },
+            code: '8H',
+            value: '8'
+          },
+          {
+            suit: 'DIAMONDS',
+            image: 'http://deckofcardsapi.com/static/img/JD.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/JD.svg',
+              png: 'http://deckofcardsapi.com/static/img/JD.png'
+            },
+            code: 'JD',
+            value: 'JACK'
+          },
+          {
+            suit: 'CLUBS',
+            image: 'http://deckofcardsapi.com/static/img/8C.png',
+            images: {
+              svg: 'http://deckofcardsapi.com/static/img/8C.svg',
+              png: 'http://deckofcardsapi.com/static/img/8C.png'
+            },
+            code: '8C',
+            value: '8'
+          }
+        ]
+      }
+    }
 
-    /* Level 3 - rockstars */
-
-    function level3() {
-      const ex1 =
-        "Use map to transform list of rockstar first,last name objects to objects with fullname";
+    function level4() {
+      const ex1 = "Use map to transform list of card data to list of images";
       const exercise1 = _ => {
-        const addFullname = o => ({ fullname: fullname(o) });
-        return map(addFullname, stars);
+        const data = getCards();
+        const getImgs = o => `<img src=${o.image} />`;
+        return map(getImgs, data.cards);
       };
 
-      const ex2 = "Use filter to filter list of rockstars that are still alive";
+      const ex2 = "Use filter to filter list of cards of the suit clubs";
       const exercise2 = _ => {
-        const isAlive = o => prop("alive", o) === true;
-        return filter(isAlive, stars);
+        const data = getCards();
+        const onlyClubs = o => prop("suit", o) === "CLUBS";
+        return filter(onlyClubs, data.cards);
       };
 
       const ex3 =
-        "Use reduce and count the number of stars that are no longer living";
+        "Use reduce and count the number of cards that have a value of 8 or value of 6";
       const exercise3 = _ => {
-        const dead = (acc, o) => (prop("alive", o) === false ? acc + 1 : acc);
-        return reduce(dead, 0, stars);
+        const data = getCards();
+        const eightOrSix = (acc, o) =>
+          prop("value", o) === "8" || prop("value", o) === "6" ? acc + 1 : acc;
+        return reduce(eightOrSix, 0, data.cards);
       };
 
-      const ex4 =
-        "Use map, filter and reduce with compose show a concatenated string of the fullnames of each alive star";
+      const ex4 = `Use map, filter and reduce with compose
+    to show all cards as images that contain values of 8 or 6`;
       const exercise4 = _ => {
-        const addFullname = o => fullname(o);
-        const isAlive = o => prop("alive", o) === true;
-        const listStars = (acc, o) => o;
+        const data = getCards();
+        const eightOrSix = o =>
+          prop("value", o) === "8" || prop("value", o) === "6";
+        const getImgs = o => `<img src=${o.image} />`;
+        const onlyEightOrSix = (acc, o) => acc += o;  
+
         return compose(
-          reduce(listStars, 0),
-          map(addFullname),
-          filter(isAlive)
-        )(stars);
+          reduce(onlyEightOrSix, ''),
+          map(getImgs),
+          filter(eightOrSix)
+        )(data.cards);
       };
 
       /* tests to validate exercises go here */
-      test("Level 3", assert => {
+      test("Level 4", assert => {
         assert.deepequals(
           exercise1(),
           [
-            { fullname: "elvis presley" },
-            { fullname: "jim morrison" },
-            { fullname: "bob dylan" },
-            { fullname: "buddy holly" }
+            "<img src=http://deckofcardsapi.com/static/img/6H.png />",
+            "<img src=http://deckofcardsapi.com/static/img/7H.png />",
+            "<img src=http://deckofcardsapi.com/static/img/KS.png />",
+            "<img src=http://deckofcardsapi.com/static/img/2D.png />",
+            "<img src=http://deckofcardsapi.com/static/img/QS.png />",
+            "<img src=http://deckofcardsapi.com/static/img/0C.png />",
+            "<img src=http://deckofcardsapi.com/static/img/8H.png />",
+            "<img src=http://deckofcardsapi.com/static/img/JD.png />",
+            "<img src=http://deckofcardsapi.com/static/img/8C.png />"
           ],
           ex1
         );
 
         assert.deepequals(
           exercise2(),
-          [{ first: "bob", last: "dylan", alive: true }],
+          [
+            {
+              code: "0C",
+              image: "http://deckofcardsapi.com/static/img/0C.png",
+              images: {
+                png: "http://deckofcardsapi.com/static/img/0C.png",
+                svg: "http://deckofcardsapi.com/static/img/0C.svg"
+              },
+              suit: "CLUBS",
+              value: "10"
+            },
+            {
+              code: "8C",
+              image: "http://deckofcardsapi.com/static/img/8C.png",
+              images: {
+                png: "http://deckofcardsapi.com/static/img/8C.png",
+                svg: "http://deckofcardsapi.com/static/img/8C.svg"
+              },
+              suit: "CLUBS",
+              value: "8"
+            }
+          ],
           ex2
         );
         assert.equal(exercise3(), 3, ex3);
-        assert.equal(exercise4(), "bob dylan", ex4);
+        assert.equal(
+          exercise4(),
+          "<img src=http://deckofcardsapi.com/static/img/6H.png /><img src=http://deckofcardsapi.com/static/img/8H.png /><img src=http://deckofcardsapi.com/static/img/8C.png />",
+          ex4
+        );
       });
     }
 
@@ -1595,8 +1718,8 @@
     // level7()
     // level6()
     // level5()
-    // level4()
-    level3();
+    level4();
+    // level3();
     // level2();
     // level1()
 
