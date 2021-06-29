@@ -1,6 +1,17 @@
-import { map, compose, filter, reduce, append, pluck, lt, __,
- join, prop, path }  from 'ramda'
-import { test } from 'tape-modern'
+import {
+  map,
+  compose,
+  filter,
+  reduce,
+  append,
+  pluck,
+  lt,
+  __,
+  join,
+  prop,
+  path
+} from "ramda";
+import { test } from "tape-modern";
 
 /**
  * Level 5 - Ramda All The Things
@@ -11,34 +22,34 @@ import { test } from 'tape-modern'
 const data = {
   rows: [
     {
-      key: '1',
+      key: "1",
       doc: {
-        _id: '1',
-        type: 'movie',
-        name: 'Ghostbusters',
-        year: '1984'
+        _id: "1",
+        type: "movie",
+        name: "Ghostbusters",
+        year: "1984"
       }
     },
     {
-      key: '2',
+      key: "2",
       doc: {
-        _id: '2',
-        type: 'movie',
-        name: 'Caddyshack',
-        year: '1980'
+        _id: "2",
+        type: "movie",
+        name: "Caddyshack",
+        year: "1980"
       }
     },
     {
-      key: '2',
+      key: "2",
       doc: {
-        _id: '3',
-        type: 'movie',
-        name: 'Groundhog Day',
-        year: '1993'
+        _id: "3",
+        type: "movie",
+        name: "Groundhog Day",
+        year: "1993"
       }
     }
   ]
-}
+};
 
 /**
  * Level 5 - Challenge 1
@@ -46,8 +57,9 @@ const data = {
  * map through the data.rows array and return a list of movie docs.
  */
 const challenge1 = () => {
-  return null
-}
+  const movieDocs = arr => arr.doc;
+  return map(movieDocs, data.rows);
+};
 
 /** Level 5 = Challenge 2
  *
@@ -56,8 +68,13 @@ const challenge1 = () => {
  *
  */
 const challenge2 = () => {
-  return null
-}
+  const before1990 = o => (lt(prop("year", o.doc), "1990") ? o.doc : null);
+  const returnList = o => o.doc;
+  return compose(
+    map(returnList),
+    filter(before1990)
+  )(data.rows);
+};
 
 /** level 5 - Challenge 3
  *
@@ -68,8 +85,14 @@ const challenge2 = () => {
  * check out - append - http://ramdajs.com/docs/#append
  */
 const challenge3 = () => {
-  return null
-}
+  const before1990 = o => {
+    lt(prop("year", o.doc), "1990") ? append(o.doc, []) : append(o.doc, []);
+  };
+
+  return compose(map(before1990))(data.rows);
+};
+
+// map through, check year, if
 
 /**
  * Level 5 - Challenge 4
@@ -82,38 +105,41 @@ const challenge3 = () => {
  *
  */
 const challenge4 = () => {
-  return [] 
-}
+  return [];
+};
 
 export default () => {
-  test('Level 5 - Challenge 1', t => {
-    t.deepequals(pluck('doc', data.rows), challenge1())
-  })
+  test("Level 5 - Challenge 1", t => {
+    t.deepequals(pluck("doc", data.rows), challenge1());
+  });
 
-  test('Level 5 - Challenge 2', t => {
+  test("Level 5 - Challenge 2", t => {
     t.deepequals(
       filter(
-        compose(lt(__, '1990'), prop('year')),
-        pluck('doc', data.rows)
+        compose(
+          lt(__, "1990"),
+          prop("year")
+        ),
+        pluck("doc", data.rows)
       ),
       challenge2()
-    )
-  })
+    );
+  });
 
-  test('Level 5 - Challenge 3', t => {
+  test("Level 5 - Challenge 3", t => {
     t.deepequals(challenge3(), {
-      '90s': [{ _id: '3', type: 'movie', name: 'Groundhog Day', year: '1993' }],
-      '80s': [
-        { _id: '1', type: 'movie', name: 'Ghostbusters', year: '1984' },
-        { _id: '2', type: 'movie', name: 'Caddyshack', year: '1980' }
+      "90s": [{ _id: "3", type: "movie", name: "Groundhog Day", year: "1993" }],
+      "80s": [
+        { _id: "1", type: "movie", name: "Ghostbusters", year: "1984" },
+        { _id: "2", type: "movie", name: "Caddyshack", year: "1980" }
       ]
-    })
-  })
+    });
+  });
 
-  test('Level 5 - Challenge 4', t => {
+  test("Level 5 - Challenge 4", t => {
     t.equal(
-      challenge4().join(''),
-      '<li>Ghostbusters - 1984</li><li>Caddyshack - 1980</li><li>Groundhog Day - 1993</li>'
-    )
-  })
-}
+      challenge4().join(""),
+      "<li>Ghostbusters - 1984</li><li>Caddyshack - 1980</li><li>Groundhog Day - 1993</li>"
+    );
+  });
+};

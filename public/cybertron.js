@@ -258,6 +258,35 @@
     }
     //# sourceMappingURL=tape-modern.esm.js.map
 
+    /**
+     * A special placeholder value used to specify "gaps" within curried functions,
+     * allowing partial application of any combination of arguments, regardless of
+     * their positions.
+     *
+     * If `g` is a curried ternary function and `_` is `R.__`, the following are
+     * equivalent:
+     *
+     *   - `g(1, 2, 3)`
+     *   - `g(_, 2, 3)(1)`
+     *   - `g(_, _, 3)(1)(2)`
+     *   - `g(_, _, 3)(1, 2)`
+     *   - `g(_, 2, _)(1, 3)`
+     *   - `g(_, 2)(1)(3)`
+     *   - `g(_, 2)(1, 3)`
+     *   - `g(_, 2)(_, 3)(1)`
+     *
+     * @name __
+     * @constant
+     * @memberOf R
+     * @since v0.6.0
+     * @category Function
+     * @example
+     *
+     *      const greet = R.replace('{name}', R.__, 'Hello, {name}!');
+     *      greet('Alice'); //=> 'Hello, Alice!'
+     */
+    var __ = { '@@functional/placeholder': true };
+
     function _isPlaceholder(a) {
            return a != null && typeof a === 'object' && a['@@functional/placeholder'] === true;
     }
@@ -305,6 +334,38 @@
             }) : fn(a, b);
         }
       };
+    }
+
+    /**
+     * Private `concat` function to merge two array-like objects.
+     *
+     * @private
+     * @param {Array|Arguments} [set1=[]] An array-like object.
+     * @param {Array|Arguments} [set2=[]] An array-like object.
+     * @return {Array} A new, merged array.
+     * @example
+     *
+     *      _concat([4, 5, 6], [1, 2, 3]); //=> [4, 5, 6, 1, 2, 3]
+     */
+    function _concat(set1, set2) {
+      set1 = set1 || [];
+      set2 = set2 || [];
+      var idx;
+      var len1 = set1.length;
+      var len2 = set2.length;
+      var result = [];
+
+      idx = 0;
+      while (idx < len1) {
+        result[result.length] = set1[idx];
+        idx += 1;
+      }
+      idx = 0;
+      while (idx < len2) {
+        result[result.length] = set2[idx];
+        idx += 1;
+      }
+      return result;
     }
 
     function _arity(n, fn) {
@@ -917,6 +978,37 @@
     });
 
     /**
+     * Returns a new list by plucking the same named property off all objects in
+     * the list supplied.
+     *
+     * `pluck` will work on
+     * any [functor](https://github.com/fantasyland/fantasy-land#functor) in
+     * addition to arrays, as it is equivalent to `R.map(R.prop(k), f)`.
+     *
+     * @func
+     * @memberOf R
+     * @since v0.1.0
+     * @category List
+     * @sig Functor f => k -> f {k: v} -> f v
+     * @param {Number|String} key The key name to pluck off of each object.
+     * @param {Array} f The array or functor to consider.
+     * @return {Array} The list of values for the given key.
+     * @see R.props
+     * @example
+     *
+     *      var getAges = R.pluck('age');
+     *      getAges([{name: 'fred', age: 29}, {name: 'wilma', age: 27}]); //=> [29, 27]
+     *
+     *      R.pluck(0, [[1, 2], [3, 4]]);               //=> [1, 3]
+     *      R.pluck('val', {a: {val: 3}, b: {val: 5}}); //=> {a: 3, b: 5}
+     * @symb R.pluck('x', [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}]) = [1, 3, 5]
+     * @symb R.pluck(0, [[1, 2], [3, 4], [5, 6]]) = [1, 3, 5]
+     */
+    var pluck = /*#__PURE__*/_curry2(function pluck(p, list) {
+      return map(prop(p), list);
+    });
+
+    /**
      * Returns a single item by iterating through the list, successively calling
      * the iterator function and passing it an accumulator value and the current
      * value from the array, and then passing the result to the next call.
@@ -963,6 +1055,30 @@
      * @symb R.reduce(f, a, [b, c, d]) = f(f(f(a, b), c), d)
      */
     var reduce = /*#__PURE__*/_curry3(_reduce);
+
+    /**
+     * Returns a new list containing the contents of the given list, followed by
+     * the given element.
+     *
+     * @func
+     * @memberOf R
+     * @since v0.1.0
+     * @category List
+     * @sig a -> [a] -> [a]
+     * @param {*} el The element to add to the end of the new list.
+     * @param {Array} list The list of elements to add a new item to.
+     *        list.
+     * @return {Array} A new list containing the elements of the old list followed by `el`.
+     * @see R.prepend
+     * @example
+     *
+     *      R.append('tests', ['write', 'more']); //=> ['write', 'more', 'tests']
+     *      R.append('tests', []); //=> ['tests']
+     *      R.append(['tests'], ['write', 'more']); //=> ['write', 'more', ['tests']]
+     */
+    var append = /*#__PURE__*/_curry2(function append(el, list) {
+      return _concat(list, [el]);
+    });
 
     /**
      * Gives a single-word string description of the (native) type of a value,
@@ -1454,6 +1570,31 @@
       _filter(pred, filterable);
     }));
 
+    /**
+     * Returns `true` if the first argument is less than the second; `false`
+     * otherwise.
+     *
+     * @func
+     * @memberOf R
+     * @since v0.1.0
+     * @category Relation
+     * @sig Ord a => a -> a -> Boolean
+     * @param {*} a
+     * @param {*} b
+     * @return {Boolean}
+     * @see R.gt
+     * @example
+     *
+     *      R.lt(2, 1); //=> false
+     *      R.lt(2, 2); //=> false
+     *      R.lt(2, 3); //=> true
+     *      R.lt('a', 'z'); //=> true
+     *      R.lt('z', 'a'); //=> false
+     */
+    var lt = /*#__PURE__*/_curry2(function lt(a, b) {
+      return a < b;
+    });
+
     function createCommonjsModule(fn, module) {
     	return module = { exports: {} }, fn(module, module.exports), module.exports;
     }
@@ -1521,195 +1662,136 @@
     });
     var tapBrowserColor_1 = tapBrowserColor.colors;
 
-    function getCards() {
-      return {
-        cards: [
-          {
-            suit: 'HEARTS',
-            image: 'http://deckofcardsapi.com/static/img/6H.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/6H.svg',
-              png: 'http://deckofcardsapi.com/static/img/6H.png'
-            },
-            code: '6H',
-            value: '6'
-          },
-          {
-            suit: 'HEARTS',
-            image: 'http://deckofcardsapi.com/static/img/7H.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/7H.svg',
-              png: 'http://deckofcardsapi.com/static/img/7H.png'
-            },
-            code: '7H',
-            value: '7'
-          },
-          {
-            suit: 'SPADES',
-            image: 'http://deckofcardsapi.com/static/img/KS.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/KS.svg',
-              png: 'http://deckofcardsapi.com/static/img/KS.png'
-            },
-            code: 'KS',
-            value: 'KING'
-          },
-          {
-            suit: 'DIAMONDS',
-            image: 'http://deckofcardsapi.com/static/img/2D.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/2D.svg',
-              png: 'http://deckofcardsapi.com/static/img/2D.png'
-            },
-            code: '2D',
-            value: '2'
-          },
-          {
-            suit: 'SPADES',
-            image: 'http://deckofcardsapi.com/static/img/QS.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/QS.svg',
-              png: 'http://deckofcardsapi.com/static/img/QS.png'
-            },
-            code: 'QS',
-            value: 'QUEEN'
-          },
-          {
-            suit: 'CLUBS',
-            image: 'http://deckofcardsapi.com/static/img/0C.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/0C.svg',
-              png: 'http://deckofcardsapi.com/static/img/0C.png'
-            },
-            code: '0C',
-            value: '10'
-          },
-          {
-            suit: 'HEARTS',
-            image: 'http://deckofcardsapi.com/static/img/8H.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/8H.svg',
-              png: 'http://deckofcardsapi.com/static/img/8H.png'
-            },
-            code: '8H',
-            value: '8'
-          },
-          {
-            suit: 'DIAMONDS',
-            image: 'http://deckofcardsapi.com/static/img/JD.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/JD.svg',
-              png: 'http://deckofcardsapi.com/static/img/JD.png'
-            },
-            code: 'JD',
-            value: 'JACK'
-          },
-          {
-            suit: 'CLUBS',
-            image: 'http://deckofcardsapi.com/static/img/8C.png',
-            images: {
-              svg: 'http://deckofcardsapi.com/static/img/8C.svg',
-              png: 'http://deckofcardsapi.com/static/img/8C.png'
-            },
-            code: '8C',
-            value: '8'
+    /**
+     * Level 5 - Ramda All The Things
+     *
+     * Results Data
+     */
+
+    const data = {
+      rows: [
+        {
+          key: "1",
+          doc: {
+            _id: "1",
+            type: "movie",
+            name: "Ghostbusters",
+            year: "1984"
           }
-        ]
-      }
-    }
+        },
+        {
+          key: "2",
+          doc: {
+            _id: "2",
+            type: "movie",
+            name: "Caddyshack",
+            year: "1980"
+          }
+        },
+        {
+          key: "2",
+          doc: {
+            _id: "3",
+            type: "movie",
+            name: "Groundhog Day",
+            year: "1993"
+          }
+        }
+      ]
+    };
 
-    function level4() {
-      const ex1 = "Use map to transform list of card data to list of images";
-      const exercise1 = _ => {
-        const data = getCards();
-        const getImgs = o => `<img src=${o.image} />`;
-        return map(getImgs, data.cards);
+    /**
+     * Level 5 - Challenge 1
+     *
+     * map through the data.rows array and return a list of movie docs.
+     */
+    const challenge1 = () => {
+      const movieDocs = arr => arr.doc;
+      return map(movieDocs, data.rows);
+    };
+
+    /** Level 5 = Challenge 2
+     *
+     * map through the data.rows array and then filter all movies that were
+     * filmed before 1990
+     *
+     */
+    const challenge2 = () => {
+      const before1990 = o => (lt(prop("year", o.doc), "1990") ? o.doc : null);
+      const returnList = o => o.doc;
+      return compose(
+        map(returnList),
+        filter(before1990)
+      )(data.rows);
+    };
+
+    /** level 5 - Challenge 3
+     *
+     * Use reduce to group movies by decade 80s, 90s etc
+     *  { '80s': [], '90s': [] }
+     *
+     * HINT: you will want to append each movie to the right group array
+     * check out - append - http://ramdajs.com/docs/#append
+     */
+    const challenge3 = () => {
+      const before1990 = o => {
+        lt(prop("year", o.doc), "1990") ? append(o.doc, []) : append(o.doc, []);
       };
 
-      const ex2 = "Use filter to filter list of cards of the suit clubs";
-      const exercise2 = _ => {
-        const data = getCards();
-        const onlyClubs = o => prop("suit", o) === "CLUBS";
-        return filter(onlyClubs, data.cards);
-      };
+      return compose(map(before1990))(data.rows);
+    };
 
-      const ex3 =
-        "Use reduce and count the number of cards that have a value of 8 or value of 6";
-      const exercise3 = _ => {
-        const data = getCards();
-        const eightOrSix = (acc, o) =>
-          prop("value", o) === "8" || prop("value", o) === "6" ? acc + 1 : acc;
-        return reduce(eightOrSix, 0, data.cards);
-      };
+    // map through, check year, if
 
-      const ex4 = `Use map, filter and reduce with compose
-    to show all cards as images that contain values of 8 or 6`;
-      const exercise4 = _ => {
-        const data = getCards();
-        const eightOrSix = o =>
-          prop("value", o) === "8" || prop("value", o) === "6";
-        const getImgs = o => `<img src=${o.image} />`;
-        const onlyEightOrSix = (acc, o) => acc += o;  
+    /**
+     * Level 5 - Challenge 4
+     *
+     * map over the rows and pick the movie documents
+     * transform to an array of strings `[name] - [year]`
+     * then transform to a set of list items - `<li>${movie}</li>`
+     *
+     * use the compose function to only map once.
+     *
+     */
+    const challenge4 = () => {
+      return [];
+    };
 
-        return compose(
-          reduce(onlyEightOrSix, ''),
-          map(getImgs),
-          filter(eightOrSix)
-        )(data.cards);
-      };
+    var level5 = () => {
+      test("Level 5 - Challenge 1", t => {
+        t.deepequals(pluck("doc", data.rows), challenge1());
+      });
 
-      /* tests to validate exercises go here */
-      test("Level 4", assert => {
-        assert.deepequals(
-          exercise1(),
-          [
-            "<img src=http://deckofcardsapi.com/static/img/6H.png />",
-            "<img src=http://deckofcardsapi.com/static/img/7H.png />",
-            "<img src=http://deckofcardsapi.com/static/img/KS.png />",
-            "<img src=http://deckofcardsapi.com/static/img/2D.png />",
-            "<img src=http://deckofcardsapi.com/static/img/QS.png />",
-            "<img src=http://deckofcardsapi.com/static/img/0C.png />",
-            "<img src=http://deckofcardsapi.com/static/img/8H.png />",
-            "<img src=http://deckofcardsapi.com/static/img/JD.png />",
-            "<img src=http://deckofcardsapi.com/static/img/8C.png />"
-          ],
-          ex1
-        );
-
-        assert.deepequals(
-          exercise2(),
-          [
-            {
-              code: "0C",
-              image: "http://deckofcardsapi.com/static/img/0C.png",
-              images: {
-                png: "http://deckofcardsapi.com/static/img/0C.png",
-                svg: "http://deckofcardsapi.com/static/img/0C.svg"
-              },
-              suit: "CLUBS",
-              value: "10"
-            },
-            {
-              code: "8C",
-              image: "http://deckofcardsapi.com/static/img/8C.png",
-              images: {
-                png: "http://deckofcardsapi.com/static/img/8C.png",
-                svg: "http://deckofcardsapi.com/static/img/8C.svg"
-              },
-              suit: "CLUBS",
-              value: "8"
-            }
-          ],
-          ex2
-        );
-        assert.equal(exercise3(), 3, ex3);
-        assert.equal(
-          exercise4(),
-          "<img src=http://deckofcardsapi.com/static/img/6H.png /><img src=http://deckofcardsapi.com/static/img/8H.png /><img src=http://deckofcardsapi.com/static/img/8C.png />",
-          ex4
+      test("Level 5 - Challenge 2", t => {
+        t.deepequals(
+          filter(
+            compose(
+              lt(__, "1990"),
+              prop("year")
+            ),
+            pluck("doc", data.rows)
+          ),
+          challenge2()
         );
       });
-    }
+
+      test("Level 5 - Challenge 3", t => {
+        t.deepequals(challenge3(), {
+          "90s": [{ _id: "3", type: "movie", name: "Groundhog Day", year: "1993" }],
+          "80s": [
+            { _id: "1", type: "movie", name: "Ghostbusters", year: "1984" },
+            { _id: "2", type: "movie", name: "Caddyshack", year: "1980" }
+          ]
+        });
+      });
+
+      test("Level 5 - Challenge 4", t => {
+        t.equal(
+          challenge4().join(""),
+          "<li>Ghostbusters - 1984</li><li>Caddyshack - 1980</li><li>Groundhog Day - 1993</li>"
+        );
+      });
+    };
 
     assert.deepequals = (a, b, msg) => {
       assert.ok(equals(a, b), msg);
@@ -1717,8 +1799,8 @@
     // levelExtra()
     // level7()
     // level6()
-    // level5()
-    level4();
+    level5();
+    // level4();
     // level3();
     // level2();
     // level1()
